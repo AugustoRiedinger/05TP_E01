@@ -28,6 +28,10 @@ DEFINICIONES:
 //Tiempo de interrupcion por Systick - 50mseg:
 #define TimeINT_Systick 0.05
 
+//Parámetros de configuración del TIM3:
+#define Freq 	 0.1
+#define TimeBase 200e3
+
 //Pines de conexion de los pulsadores/teclado:
 #define F1_Port GPIOC
 #define F1 		GPIO_Pin_9
@@ -41,16 +45,6 @@ DEFINICIONES:
 //Pin de conexion del LM35:
 #define LM35 	  GPIO_Pin_0
 #define LM35_Port GPIOC
-
-//Pin del BackLigth del DISPLAY LCD:
-#define BL_PORT GPIOD
-#define BL		GPIO_Pin_7
-
-//Ticks del despachador de tareas:
-#define Ticks_ClearLCD    5
-#define Ticks_Switchs     2
-#define Ticks_TimeIND 	  20
-#define Ticks_Temperature 8
 
 //[3] Temperatura maxima medida en grados centrigados:
 #define MAXTempDegrees 206
@@ -104,12 +98,18 @@ CONFIGURACION DEL MICRO:
 	INIT_DO(F2_Port, F2);
 	INIT_DI(C1_Port, C1);
 	INIT_DI(C2_Port, C2);
+	INIT_DO(GPIOB, GPIO_Pin_7);
 
 	//Inicializacion del LM35 como ENTRADA ANALOGICA / ADC1:
 	INIT_ADC(LM35_Port, LM35);
 
-	//[1]Inicializacion de interrupcion por tiempo cada 50 mseg:
+	//Inicializacion de interrupcion por tiempo cada 50 mseg:
 	INIT_SYSTICK(TimeINT_Systick);
+
+	//Inicialización del TIM3:
+	INIT_TIM3();
+	SET_TIM3(TimeBase, Freq);
+
 
 /*------------------------------------------------------------------------------
 BUCLE PRINCIPAL:
@@ -129,3 +129,14 @@ void SysTick_Handler()
 {
 
 }
+
+//Interrupcion al vencimiento de cuenta de TIM3:
+void TIM3_IRQHandler(void)
+{
+	if (TIM_GetITStatus(TIM3, TIM_IT_CC1) != RESET) {
+		TIM_ClearITPendingBit(TIM3, TIM_IT_CC1);
+
+		GPIO_ToggleBits(GPIOB, GPIO_Pin_7); // led AZUL
+	}
+}
+

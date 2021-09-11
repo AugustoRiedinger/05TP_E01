@@ -6,6 +6,8 @@
 #include "stm32f4xx_rcc.h"
 #include "stm32f4xx_adc.h"
 #include "stdio.h"
+#include <stm32f4xx_tim.h>
+#include <misc.h>
 
 
 //--------------------------------------------------------------
@@ -97,6 +99,9 @@ void INIT_TIM4(GPIO_TypeDef*, uint16_t);
 void SET_TIM4(uint16_t, uint32_t T, uint32_t, uint32_t);
 void INIT_TIM1(GPIO_TypeDef*, uint16_t);
 void SET_TIM1(uint16_t , uint32_t , uint32_t , uint32_t );
+void INIT_TIM3(void);
+void SET_TIM3(uint32_t, uint32_t);
+
 
 
 #endif //mi_libreria_H
