@@ -28,6 +28,10 @@ DEFINICIONES:
 //Tiempo de interrupcion por Systick - 50mseg:
 #define TimeINT_Systick 0.05
 
+//Parámetros de configuración del TIM3:
+#define Freq 	 0.01
+#define TimeBase 200e3
+
 //Pines de conexion de los pulsadores/teclado:
 #define F1_Port GPIOC
 #define F1 		GPIO_Pin_9
@@ -41,16 +45,6 @@ DEFINICIONES:
 //Pin de conexion del LM35:
 #define LM35 	  GPIO_Pin_0
 #define LM35_Port GPIOC
-
-//Pin del BackLigth del DISPLAY LCD:
-#define BL_PORT GPIOD
-#define BL		GPIO_Pin_7
-
-//Ticks del despachador de tareas:
-#define Ticks_ClearLCD    5
-#define Ticks_Switchs     2
-#define Ticks_TimeIND 	  20
-#define Ticks_Temperature 8
 
 //[3] Temperatura maxima medida en grados centrigados:
 #define MAXTempDegrees 206
@@ -108,8 +102,13 @@ CONFIGURACION DEL MICRO:
 	//Inicializacion del LM35 como ENTRADA ANALOGICA / ADC1:
 	INIT_ADC(LM35_Port, LM35);
 
-	//[1]Inicializacion de interrupcion por tiempo cada 50 mseg:
+	//Inicializacion de interrupcion por tiempo cada 50 mseg:
 	INIT_SYSTICK(TimeINT_Systick);
+
+	//Inicialización del TIM3:
+	INIT_TIM3();
+	SET_TIM3(TimeBase, Freq);
+
 
 /*------------------------------------------------------------------------------
 BUCLE PRINCIPAL:
@@ -129,3 +128,46 @@ void SysTick_Handler()
 {
 
 }
+
+//Interrupcion al vencimiento de cuenta de TIM3:
+void TIM3_IRQHandler(void)
+{
+	if (TIM_GetITStatus(TIM3, TIM_IT_CC1) != RESET) {
+		TIM_ClearITPendingBit(TIM3, TIM_IT_CC1);
+
+		//Buffers para mostrar valores de variables:
+		char BufferTemperature[BufferLength];
+		char BufferSeg[BufferLength];
+		char BufferCont[BufferLength];
+
+		//Refresco del LCD:
+		CLEAR_LCD_2x16(LCD_2X16);
+
+		//Mostrar temperatura:
+		PRINT_LCD_2x16(LCD_2X16, 0, 0, "TDII T:");
+		sprintf(BufferTemperature, "%.1f", TempDegrees);
+		PRINT_LCD_2x16(LCD_2X16, 8, 0, BufferTemperature);
+		PRINT_LCD_2x16(LCD_2X16, 13, 0, "^C");
+
+		//Mostrar segundos:
+		PRINT_LCD_2x16(LCD_2X16, 0, 1, "Seg:");
+		sprintf(BufferSeg, "%d", Seg);
+		if (Seg < 10) {
+			PRINT_LCD_2x16(LCD_2X16, 5, 1, "0");
+			PRINT_LCD_2x16(LCD_2X16, 6, 1, BufferSeg);
+		} else
+			PRINT_LCD_2x16(LCD_2X16, 5, 1, BufferSeg);
+
+		//Mostrar indicador de pulsaciones:
+		PRINT_LCD_2x16(LCD_2X16, 9, 1, "ind:");
+		sprintf(BufferCont, "%d", 1);
+//		if(Cont < 10)
+//		{
+//			PRINT_LCD_2x16(LCD_2X16, 14, 1, "0");
+//			PRINT_LCD_2x16(LCD_2X16, 15, 1, BufferCont);
+//		}
+//		else
+//			PRINT_LCD_2x16(LCD_2X16, 14, 1, BufferCont);
+	}
+}
+

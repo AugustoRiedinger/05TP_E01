@@ -1,0 +1,16 @@
+
+05TP_E01.elf.launch
+Debug/05TP_E01.elf
+Debug/05TP_E01.list
+Debug/05TP_E01.map
+Debug/src/main.o
+Debug/src/main.su
+Debug/src/mi_libreria.o
+Debug/src/mi_libreria.su
+Debug/src/stm32f4xx_it.o
+Debug/src/stm32f4xx_it.su
+*.elf
+*.list
+*.map
+*.o
+*.su
