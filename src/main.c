@@ -29,7 +29,7 @@ DEFINICIONES:
 #define TimeINT_Systick 0.05
 
 //Parámetros de configuración del TIM3:
-#define Freq 	 0.1
+#define Freq 	 0.01
 #define TimeBase 200e3
 
 //Pines de conexion de los pulsadores/teclado:
@@ -98,7 +98,6 @@ CONFIGURACION DEL MICRO:
 	INIT_DO(F2_Port, F2);
 	INIT_DI(C1_Port, C1);
 	INIT_DI(C2_Port, C2);
-	INIT_DO(GPIOB, GPIO_Pin_7);
 
 	//Inicializacion del LM35 como ENTRADA ANALOGICA / ADC1:
 	INIT_ADC(LM35_Port, LM35);
@@ -136,7 +135,39 @@ void TIM3_IRQHandler(void)
 	if (TIM_GetITStatus(TIM3, TIM_IT_CC1) != RESET) {
 		TIM_ClearITPendingBit(TIM3, TIM_IT_CC1);
 
-		GPIO_ToggleBits(GPIOB, GPIO_Pin_7); // led AZUL
+		//Buffers para mostrar valores de variables:
+		char BufferTemperature[BufferLength];
+		char BufferSeg[BufferLength];
+		char BufferCont[BufferLength];
+
+		//Refresco del LCD:
+		CLEAR_LCD_2x16(LCD_2X16);
+
+		//Mostrar temperatura:
+		PRINT_LCD_2x16(LCD_2X16, 0, 0, "TDII T:");
+		sprintf(BufferTemperature, "%.1f", TempDegrees);
+		PRINT_LCD_2x16(LCD_2X16, 8, 0, BufferTemperature);
+		PRINT_LCD_2x16(LCD_2X16, 13, 0, "^C");
+
+		//Mostrar segundos:
+		PRINT_LCD_2x16(LCD_2X16, 0, 1, "Seg:");
+		sprintf(BufferSeg, "%d", Seg);
+		if (Seg < 10) {
+			PRINT_LCD_2x16(LCD_2X16, 5, 1, "0");
+			PRINT_LCD_2x16(LCD_2X16, 6, 1, BufferSeg);
+		} else
+			PRINT_LCD_2x16(LCD_2X16, 5, 1, BufferSeg);
+
+		//Mostrar indicador de pulsaciones:
+		PRINT_LCD_2x16(LCD_2X16, 9, 1, "ind:");
+		sprintf(BufferCont, "%d", 1);
+//		if(Cont < 10)
+//		{
+//			PRINT_LCD_2x16(LCD_2X16, 14, 1, "0");
+//			PRINT_LCD_2x16(LCD_2X16, 15, 1, BufferCont);
+//		}
+//		else
+//			PRINT_LCD_2x16(LCD_2X16, 14, 1, BufferCont);
 	}
 }
 

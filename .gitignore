@@ -9,3 +9,8 @@ Debug/src/mi_libreria.o
 Debug/src/mi_libreria.su
 Debug/src/stm32f4xx_it.o
 Debug/src/stm32f4xx_it.su
+*.elf
+*.list
+*.map
+*.o
+*.su
