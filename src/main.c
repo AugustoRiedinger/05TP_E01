@@ -113,7 +113,7 @@ CONFIGURACION DEL MICRO:
 	SET_TIM3(TimeBase, Freq);
 
 	//Inicializacion de la interrupcion por pulso externo en PA0:
-	INIT_EXTINT(GPIOA, GPIO_Pin_0);
+	INIT_EXTINT(GPIOD, GPIO_Pin_1);
 
 
 /*------------------------------------------------------------------------------
@@ -178,14 +178,14 @@ void TIM3_IRQHandler(void)
 }
 
 //Interrupcion al pulso por linea cero:
-void EXTI0_IRQHandler(void)
+void EXTI1_IRQHandler(void)
 {
-  if(EXTI_GetITStatus(EXTI_Line0) != RESET)
+  if(EXTI_GetITStatus(EXTI_Line1) != RESET)
   {
 	GPIO_ToggleBits(GPIOB, GPIO_Pin_0);
 
     /* Clear the EXTI line 0 pending bit */
-    EXTI_ClearITPendingBit(EXTI_Line0);
+    EXTI_ClearITPendingBit(EXTI_Line1);
   }
 }
 

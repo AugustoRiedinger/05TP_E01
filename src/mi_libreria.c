@@ -29,6 +29,8 @@ uint8_t FIND_PINSOURCE(uint32_t Pin);
 uint8_t FIND_EXTI_PORT_SOURCE(GPIO_TypeDef* Port);
 uint8_t FIND_EXTI_PIN_SOURCE(uint32_t Pin);
 uint32_t FIND_EXTI_LINE(GPIO_TypeDef* Port, uint32_t Pin);
+uint32_t FIND_EXTI_HANDLER(GPIO_TypeDef* Port, uint32_t Pin);
+
 
 /*****************************************************************************
 INIT_DI:
@@ -782,7 +784,7 @@ void INIT_EXTINT(GPIO_TypeDef* Port, uint16_t Pin)
 
 	/* Enable and set EXTI Line0 Interrupt to the lowest priority */
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
-	NVIC_InitStructure.NVIC_IRQChannel = EXTI0_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannel = FIND_EXTI_HANDLER(Port,Pin);
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x03;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x03;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
@@ -1023,18 +1025,32 @@ uint8_t FIND_EXTI_PORT_SOURCE(GPIO_TypeDef* Port)
 {
 	if(Port == GPIOA)
 		return EXTI_PortSourceGPIOA;
+	else if(Port == GPIOD)
+		return EXTI_PortSourceGPIOD;
 }
 
 uint8_t FIND_EXTI_PIN_SOURCE(uint32_t Pin)
 {
 	if(Pin == GPIO_Pin_0)
 		return EXTI_PinSource0;
+	else if(Pin == GPIO_Pin_1)
+		return EXTI_PinSource1;
 }
 
 uint32_t FIND_EXTI_LINE(GPIO_TypeDef* Port, uint32_t Pin)
 {
 	if(Port == GPIOA && Pin == GPIO_Pin_0)
 		return EXTI_Line0;
+	else if(Port == GPIOD && Pin == GPIO_Pin_1)
+		return EXTI_Line1;
+}
+
+uint32_t FIND_EXTI_HANDLER(GPIO_TypeDef* Port, uint32_t Pin)
+{
+	if (Port == GPIOA && Pin == GPIO_Pin_0)
+		return EXTI0_IRQn;
+	else if (Port == GPIOD && Pin == GPIO_Pin_1)
+		return EXTI1_IRQn;
 }
 /*------------------------------------------------------------------------------
 NOTAS
