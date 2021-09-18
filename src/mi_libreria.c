@@ -25,6 +25,11 @@ void P_LCD_2x16_Data(uint8_t wert, LCD_2X16_t* LCD_2X16);
 //TIM4:
 uint8_t FIND_PINSOURCE(uint32_t Pin);
 
+//EXTINT:
+uint8_t FIND_EXTI_PORT_SOURCE(GPIO_TypeDef* Port);
+uint8_t FIND_EXTI_PIN_SOURCE(uint32_t Pin);
+uint32_t FIND_EXTI_LINE(GPIO_TypeDef* Port, uint32_t Pin);
+
 /*****************************************************************************
 INIT_DI:
 
@@ -733,6 +738,57 @@ void SET_TIM3(uint32_t TimeBase, uint32_t Freq)
 	TIM_Cmd(TIM3, ENABLE);
 }
 
+
+
+/*****************************************************************************
+INIT_EXTINT
+	* @author	A. Riedinger.
+	* @brief	Inicializa las interrupciones externas en una determinada linea.
+	* @returns	void
+	* @param
+		- Port		Puerto del timer a inicializar. Ej: GPIOX.
+		- Pin		Pin del LED. Ej: GPIO_Pin_X
+
+	* @ej
+		- INIT_TIM4(GPIOX, GPIO_Pin_X); //Inicialización del Pin PXXX como TIMER4.
+******************************************************************************/
+void INIT_EXTINT(GPIO_TypeDef* Port, uint16_t Pin)
+{
+	GPIO_InitTypeDef GPIO_InitStructure;
+	NVIC_InitTypeDef NVIC_InitStructure;
+
+	/* Enable GPIO clock */
+	uint32_t Clock;
+	Clock = FIND_CLOCK(Port);
+	RCC_AHB1PeriphClockCmd(Clock, ENABLE);
+	/* Enable SYSCFG clock */
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+
+	/* Configure pin as input floating */
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_InitStructure.GPIO_Pin = Pin;
+	GPIO_Init(Port, &GPIO_InitStructure);
+
+	/* Connect EXTI Line to pin */
+	SYSCFG_EXTILineConfig(FIND_EXTI_PORT_SOURCE(Port), FIND_EXTI_PIN_SOURCE(Pin));
+
+	/* Configure EXTI Line0 */
+	EXTI_InitStructure.EXTI_Line = FIND_EXTI_LINE(Port, Pin);
+	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
+	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
+	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
+	EXTI_Init(&EXTI_InitStructure);
+
+	/* Enable and set EXTI Line0 Interrupt to the lowest priority */
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI0_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x03;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x03;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+}
+
 /*------------------------------------------------------------------------------
  FUNCIONES INTERNAS:
 ------------------------------------------------------------------------------*/
@@ -962,6 +1018,24 @@ uint8_t FIND_PINSOURCE(uint32_t Pin)
 	else if(Pin == GPIO_Pin_15) return GPIO_PinSource15;
 }
 
+//Interrupcion externa:
+uint8_t FIND_EXTI_PORT_SOURCE(GPIO_TypeDef* Port)
+{
+	if(Port == GPIOA)
+		return EXTI_PortSourceGPIOA;
+}
+
+uint8_t FIND_EXTI_PIN_SOURCE(uint32_t Pin)
+{
+	if(Pin == GPIO_Pin_0)
+		return EXTI_PinSource0;
+}
+
+uint32_t FIND_EXTI_LINE(GPIO_TypeDef* Port, uint32_t Pin)
+{
+	if(Port == GPIOA && Pin == GPIO_Pin_0)
+		return EXTI_Line0;
+}
 /*------------------------------------------------------------------------------
 NOTAS
 ------------------------------------------------------------------------------*/

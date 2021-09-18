@@ -8,7 +8,8 @@
 #include "stdio.h"
 #include <stm32f4xx_tim.h>
 #include <misc.h>
-
+#include "stm32f4xx_exti.h"
+#include "stm32f4xx_syscfg.h"
 
 //--------------------------------------------------------------
 // Defines
@@ -22,8 +23,10 @@
 #define	BufferLength 	  20
 #define  MaxDigCount 	  4035
 
-TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-TIM_OCInitTypeDef  TIM_OCInitStructure;
+TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+TIM_OCInitTypeDef  		TIM_OCInitStructure;
+EXTI_InitTypeDef   		EXTI_InitStructure;
+
 
 //--------------------------------------------------------------
 // LCD Kommandos (siehe Datenblatt)
@@ -101,6 +104,8 @@ void INIT_TIM1(GPIO_TypeDef*, uint16_t);
 void SET_TIM1(uint16_t , uint32_t , uint32_t , uint32_t );
 void INIT_TIM3(void);
 void SET_TIM3(uint32_t, uint32_t);
+
+void INIT_EXTINT(GPIO_TypeDef*, uint16_t);
 
 
 

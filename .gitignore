@@ -14,3 +14,7 @@ Debug/src/stm32f4xx_it.su
 *.map
 *.o
 *.su
+*.elf
+*.list
+*.map
+*.o
