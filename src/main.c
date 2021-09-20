@@ -29,7 +29,7 @@ DEFINICIONES:
 #define TimeINT_Systick 0.05
 
 //Parámetros de configuración del TIM3:
-#define Freq 	 0.01
+#define Freq 	 4		//Equivalente a 250mseg
 #define TimeBase 200e3
 
 //Pines de conexion de los pulsadores/teclado:
@@ -71,11 +71,8 @@ float TempDegrees;
 
 //Variables del TS:
 uint32_t Switchs;
-<<<<<<< Updated upstream
-=======
 uint32_t TimeIND;
 uint32_t Temperature;
->>>>>>> Stashed changes
 
 //Variables para el conteo de los pulsadores:
 uint32_t S1Cont = 0;
@@ -85,7 +82,7 @@ uint32_t S4Cont = 0;
 uint32_t Cont   = 0;
 
 //Variables para el cronometro:
-uint32_t Seg;
+uint32_t Seg = 0;
 
 //Variables de temperatura:
 uint32_t ContTemp = 0;
@@ -145,13 +142,12 @@ BUCLE PRINCIPAL:
     {
 		if (Switchs == Ticks_Switchs)
 			SWITCHS();
-<<<<<<< Updated upstream
-=======
 		else if(TimeIND == Ticks_TimeIND)
 			TIME_IND();
 		else if(Temperature == Ticks_Temperature)
 			TEMPERATURE();
->>>>>>> Stashed changes
+		else if(TimeIND == Ticks_TimeIND)
+			TIME_IND();
     }
 
 }
@@ -163,11 +159,9 @@ INTERRUPCIONES:
 void SysTick_Handler()
 {
 	Switchs++;
-<<<<<<< Updated upstream
-=======
 	TimeIND++;
 	Temperature++;
->>>>>>> Stashed changes
+	TimeIND++;
 }
 
 //Interrupcion al vencimiento de cuenta de TIM3:
@@ -268,8 +262,6 @@ void SWITCHS(void)
 	GPIO_ToggleBits(F2_Port, F2);
 }
 
-<<<<<<< Updated upstream
-=======
 //Manejo del indicador de tiempo:
 void TIME_IND(void)
 {
@@ -283,7 +275,6 @@ void TIME_IND(void)
 	else
 		Seg++;
 }
-
 //Manejo del la temperatura:
 void TEMPERATURE(void)
 {
@@ -303,5 +294,3 @@ void TEMPERATURE(void)
 		ContTemp = 0;
 	}
 }
-
->>>>>>> Stashed changes
