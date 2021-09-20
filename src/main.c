@@ -45,7 +45,7 @@ DEFINICIONES:
 //Ticks del despachador de tareas:
 #define Ticks_Switchs     2
 #define Ticks_TimeIND 	  20
-#define Ticks_Temperature 8
+#define Ticks_Temperature 10
 
 //Pin de conexion del LM35:
 #define LM35 	  GPIO_Pin_0
