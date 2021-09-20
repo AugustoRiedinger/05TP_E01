@@ -33,3 +33,8 @@ Debug/05TP_E01.list
 Debug/05TP_E01.map
 Debug/src/main.o
 Debug/src/main.su
+*.su
+*.o
+*.map
+*.list
+*.elf

@@ -72,6 +72,13 @@ float TempDegrees;
 //Variables del TS:
 uint32_t Switchs;
 
+//Variables para el conteo de los pulsadores:
+uint32_t S1Cont = 0;
+uint32_t S2Cont = 0;
+uint32_t S3Cont = 0;
+uint32_t S4Cont = 0;
+uint32_t Cont   = 0;
+
 //Variables para el cronometro:
 uint32_t Seg;
 
@@ -177,27 +184,27 @@ void TIM3_IRQHandler(void)
 
 		//Mostrar indicador de pulsaciones:
 		PRINT_LCD_2x16(LCD_2X16, 9, 1, "ind:");
-		sprintf(BufferCont, "%d", 1);
-//		if(Cont < 10)
-//		{
-//			PRINT_LCD_2x16(LCD_2X16, 14, 1, "0");
-//			PRINT_LCD_2x16(LCD_2X16, 15, 1, BufferCont);
-//		}
-//		else
-//			PRINT_LCD_2x16(LCD_2X16, 14, 1, BufferCont);
+		sprintf(BufferCont, "%d", Cont);
+		if (Cont < 10) {
+			PRINT_LCD_2x16(LCD_2X16, 14, 1, "0");
+			PRINT_LCD_2x16(LCD_2X16, 15, 1, BufferCont);
+		} else
+			PRINT_LCD_2x16(LCD_2X16, 14, 1, BufferCont);
 	}
 }
 
-//Interrupcion al pulso:
+//Interrupcion al pulso por PC6-C1 o PC8-C2:
 void EXTI9_5_IRQHandler(void)
 {
   //Si la interrupcion fue por linea 6 (PC6 - C1):
   if(EXTI_GetITStatus(EXTI_Line6) != RESET)
   {
+	//Si ademas de estar C1 en 1 tambien esta F1 en 1, entonces el switch pulsado es S1:
 	if(GPIO_ReadInputDataBit(F1_Port, F1))
-		GPIO_ToggleBits(GPIOB, GPIO_Pin_7);
+		S1Cont = S1Cont + 1;
+	//Si ademas de estar C1 en 1 tambien esta F2 en 1, entonces el switch pulsado es S2:
 	else if(GPIO_ReadInputDataBit(F2_Port, F2))
-		GPIO_ToggleBits(GPIOB, GPIO_Pin_0);
+		S2Cont = S2Cont + 2;
 
     //Clear the EXTI line 6 pending bit:
     EXTI_ClearITPendingBit(EXTI_Line6);
@@ -205,14 +212,29 @@ void EXTI9_5_IRQHandler(void)
   //Si la interrupcion fue por linea 8 (PC8 - C2):
   else if(EXTI_GetITStatus(EXTI_Line8) != RESET)
   {
+	//Si ademas de estar C2 en 1 tambien esta F1 en 1, entonces el switch pulsado es S3:
 	if (GPIO_ReadInputDataBit(F1_Port, F1))
-		GPIO_ToggleBits(GPIOB, GPIO_Pin_7);
+		S3Cont = S3Cont + 3;
+	//Si ademas de estar C2 en 1 tambien esta F2 en 1, entonces el switch pulsado es S4:
 	else if (GPIO_ReadInputDataBit(F2_Port, F2))
-		GPIO_ToggleBits(GPIOB, GPIO_Pin_0);
+		S4Cont = S4Cont + 4;
 
     //Clear the EXTI line 8 pending bit:
     EXTI_ClearITPendingBit(EXTI_Line8);
   }
+
+  //Si cont llega a 100, se reseta y comienza de cero:
+  if(Cont >= 100)
+  	{
+  		Cont = 0;
+  		S1Cont = 0;
+  		S2Cont = 0;
+  		S3Cont = 0;
+  		S4Cont = 0;
+  	}
+  //Sino, se actualiza el valor de cont y se agrega a la sumatoria general:
+  else
+		Cont = S1Cont + S2Cont + S3Cont + S4Cont;
 }
 
 /*------------------------------------------------------------------------------
