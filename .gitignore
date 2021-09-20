@@ -38,3 +38,8 @@ Debug/src/main.su
 *.map
 *.list
 *.elf
+Debug/src/main.su
+Debug/src/main.o
+Debug/05TP_E01.map
+Debug/05TP_E01.list
+Debug/05TP_E01.elf
