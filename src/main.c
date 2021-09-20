@@ -44,7 +44,7 @@ DEFINICIONES:
 
 //Ticks del despachador de tareas:
 #define Ticks_ClearLCD    5
-#define Ticks_Switchs     1
+#define Ticks_Switchs     2
 #define Ticks_TimeIND 	  20
 #define Ticks_Temperature 8
 
@@ -71,6 +71,11 @@ float TempDegrees;
 
 //Variables del TS:
 uint32_t Switchs;
+<<<<<<< Updated upstream
+=======
+uint32_t TimeIND;
+uint32_t Temperature;
+>>>>>>> Stashed changes
 
 //Variables para el conteo de los pulsadores:
 uint32_t S1Cont = 0;
@@ -140,6 +145,13 @@ BUCLE PRINCIPAL:
     {
 		if (Switchs == Ticks_Switchs)
 			SWITCHS();
+<<<<<<< Updated upstream
+=======
+		else if(TimeIND == Ticks_TimeIND)
+			TIME_IND();
+		else if(Temperature == Ticks_Temperature)
+			TEMPERATURE();
+>>>>>>> Stashed changes
     }
 
 }
@@ -151,6 +163,11 @@ INTERRUPCIONES:
 void SysTick_Handler()
 {
 	Switchs++;
+<<<<<<< Updated upstream
+=======
+	TimeIND++;
+	Temperature++;
+>>>>>>> Stashed changes
 }
 
 //Interrupcion al vencimiento de cuenta de TIM3:
@@ -251,3 +268,40 @@ void SWITCHS(void)
 	GPIO_ToggleBits(F2_Port, F2);
 }
 
+<<<<<<< Updated upstream
+=======
+//Manejo del indicador de tiempo:
+void TIME_IND(void)
+{
+	//Reset variables del TS:
+	TimeIND = 0;
+
+	//Si la variable de tiempo es mayor a 100, se resetea:
+	if(Seg >= 99)
+		Seg = 0;
+	//Sino, se aumenta hasta llegar a 100.
+	else
+		Seg++;
+}
+
+//Manejo del la temperatura:
+void TEMPERATURE(void)
+{
+	//Reset variables del TS:
+	Temperature = 0;
+
+	//Almacenamiento del valor de temperatura en cuentas digitales:
+	uint32_t TempDig;
+
+	//Lectura del valor de temperatura digital:
+	TempDig = READ_ADC(LM35_Port, LM35);
+
+	//[4] Conversion de valor digital a grados centigrados:
+	ContTemp++;
+	if (ContTemp == 5) {
+		TempDegrees = (float) TempDig * MAXTempDegrees / 4095;
+		ContTemp = 0;
+	}
+}
+
+>>>>>>> Stashed changes
