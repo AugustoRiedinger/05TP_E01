@@ -31,6 +31,8 @@ uint8_t FIND_EXTI_PIN_SOURCE(uint32_t Pin);
 uint32_t FIND_EXTI_LINE(uint32_t Pin);
 uint32_t FIND_EXTI_HANDLER(uint32_t Pin);
 
+//DAC:
+uint32_t FIND_DAC_CHANNEL(GPIO_TypeDef* Port, uint32_t Pin);
 
 /*****************************************************************************
 INIT_DI:
@@ -791,6 +793,69 @@ void INIT_EXTINT(GPIO_TypeDef* Port, uint16_t Pin)
 	NVIC_Init(&NVIC_InitStructure);
 }
 
+/*****************************************************************************
+INIT_DAC_CONT
+	* @author	A. Riedinger.
+	* @brief	Inicializa una salida como DAC de continua.
+	* @returns	void
+	* @param
+		- Port		Puerto del timer a inicializar. Ej: GPIOX.
+		- Pin		Pin del LED. Ej: GPIO_Pin_X
+
+	* @ej
+		- INIT_DAC_CONT(GPIOX, GPIO_Pin_X); //Inicialización del Pin PXXX como DAC.
+******************************************************************************/
+INIT_DAC_CONT(GPIO_TypeDef* Port, uint16_t Pin)
+{
+	/* Enable GPIO clock */
+	uint32_t Clock;
+	Clock = FIND_CLOCK(Port);
+	RCC_AHB1PeriphClockCmd(Clock, ENABLE);
+
+	/* Configura el Pin como salida Analogica */
+	GPIO_InitStructure.GPIO_Pin = Pin;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_Init(Port, &GPIO_InitStructure);
+
+	/* DAC: activar clock */
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_DAC, ENABLE);
+
+	/* DAC configuracion canal */
+	DAC_InitStructure.DAC_Trigger = DAC_Trigger_None;
+	DAC_InitStructure.DAC_WaveGeneration = DAC_WaveGeneration_None;
+	DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Enable;
+	DAC_Init(FIND_DAC_CHANNEL(Port,Pin), &DAC_InitStructure);
+	//**************************************************
+
+	//DAC ON Channel 1
+	DAC_Cmd(FIND_DAC_CHANNEL(Port,Pin), ENABLE);
+}
+
+/*****************************************************************************
+DAC_CONT
+	* @author	A. Riedinger.
+	* @brief	Genera una señal DAC de continua.
+	* @returns	void
+	* @param
+		- Port		Puerto del timer a inicializar. Ej: GPIOX.
+		- Pin		Pin del LED. Ej: GPIO_Pin_X
+		- Value		El valor de continua a generar en milivolts.
+
+	* @ej
+		- INIT_DAC_CONT(GPIOX, GPIO_Pin_X); //Inicialización del Pin PXXX como DAC.
+******************************************************************************/
+void DAC_CONT(GPIO_TypeDef* Port, uint16_t Pin, int32_t MiliVolts)
+{
+	uint16_t Data;
+
+	Data = (MiliVolts * MaDigCount) / MaxMiliVoltRef;
+
+	if(FIND_DAC_CHANNEL(Port,Pin) == DAC_Channel_1)
+		DAC_SetChannel1Data(DAC_Align_12b_R, MiliVolts);
+	else
+		DAC_SetChannel2Data(DAC_Align_12b_R, MiliVolts);
+}
 /*------------------------------------------------------------------------------
  FUNCIONES INTERNAS:
 ------------------------------------------------------------------------------*/
@@ -1136,6 +1201,12 @@ uint32_t FIND_EXTI_HANDLER(uint32_t Pin)
 			 Pin == GPIO_Pin_13 || Pin == GPIO_Pin_14 || Pin == GPIO_Pin_15)
 			return EXTI15_10_IRQn;
 	else 	return 0;
+}
+
+uint32_t FIND_DAC_CHANNEL(GPIO_TypeDef* Port, uint32_t Pin)
+{
+	if(Port == GPIOA && Pin == GPIO_Pin_5) return DAC_Channel_1;
+	else return 0;
 }
 /*------------------------------------------------------------------------------
 NOTAS

@@ -6,10 +6,12 @@
 #include "stm32f4xx_rcc.h"
 #include "stm32f4xx_adc.h"
 #include "stdio.h"
-#include <stm32f4xx_tim.h>
-#include <misc.h>
+#include "stm32f4xx_tim.h"
+#include "misc.h"
 #include "stm32f4xx_exti.h"
 #include "stm32f4xx_syscfg.h"
+#include "stm32f4xx_dac.h"
+
 
 //--------------------------------------------------------------
 // Defines
@@ -20,13 +22,14 @@
 #define  TLCD_MAXX            16  // max x-Position (0...15)
 #define  TLCD_MAXY             2  // max y-Position (0...1)
 #define  Delay_Debouncing 100e3
-#define	BufferLength 	  20
+#define	 BufferLength 	  20
 #define  MaxDigCount 	  4035
+#define  MaxMiliVoltRef	  3000
 
 TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
 TIM_OCInitTypeDef  		TIM_OCInitStructure;
 EXTI_InitTypeDef   		EXTI_InitStructure;
-
+DAC_InitTypeDef 		DAC_InitStructure;
 
 //--------------------------------------------------------------
 // LCD Kommandos (siehe Datenblatt)
@@ -107,6 +110,8 @@ void SET_TIM3(uint32_t, uint32_t);
 
 void INIT_EXTINT(GPIO_TypeDef*, uint16_t);
 
+void INIT_DAC_CONT(GPIO_TypeDef*, uint16_t);
+void DAC_CONT(GPIO_TypeDef*, uint16_t, int32_t);
 
 
 #endif //mi_libreria_H
