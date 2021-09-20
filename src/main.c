@@ -90,18 +90,23 @@ CONFIGURACION DEL MICRO:
 ------------------------------------------------------------------------------*/
 	SystemInit();
 
-	//Inicializacion User LED de prueba PB0 como salida digital:
+	//Inicializacion User LED de prueba como salida digital:
 	INIT_DO(GPIOB, GPIO_Pin_0);
 	INIT_DO(GPIOB, GPIO_Pin_7);
 
 	//Inicializacion del DISPLAY LCD:
 	INIT_LCD_2x16(LCD_2X16);
 
-	//Inicializacion del teclado:
+
+	//Inicializacion de la interrupcion por pulso externo en los pines de lecura del teclado:
+	INIT_EXTINT(C1_Port, C1);
+	INIT_EXTINT(C2_Port, C2);
+	//Inicializacion de los pines de escirura del teclado como salidas digitales:
 	INIT_DO(F1_Port, F1);
 	INIT_DO(F2_Port, F2);
-	INIT_DI(C1_Port, C1);
-	INIT_DI(C2_Port, C2);
+	//Se setea F1 y F2 para medir constantemente C2 y C1 con el INT_Handler:
+	GPIO_SetBits(F1_Port, F1);
+	GPIO_SetBits(F2_Port, F2);
 
 	//Inicializacion del LM35 como ENTRADA ANALOGICA / ADC1:
 	INIT_ADC(LM35_Port, LM35);
@@ -112,12 +117,6 @@ CONFIGURACION DEL MICRO:
 	//Inicialización del TIM3:
 	INIT_TIM3();
 	SET_TIM3(TimeBase, Freq);
-
-	//Inicializacion de la interrupcion por pulso externo en PD1:
-	INIT_EXTINT(GPIOD, GPIO_Pin_1);
-	//Inicializacion de la interrupcion por pulso externo en PA0:
-	INIT_EXTINT(GPIOA, GPIO_Pin_0);
-
 
 /*------------------------------------------------------------------------------
 BUCLE PRINCIPAL:
@@ -180,29 +179,23 @@ void TIM3_IRQHandler(void)
 	}
 }
 
-//Interrupcion al pulso por linea cero:
-void EXTI0_IRQHandler(void)
+//Interrupcion al pulso:
+void EXTI9_5_IRQHandler(void)
 {
-  if(EXTI_GetITStatus(EXTI_Line0) != RESET)
+  //Si la interrupcion fue por linea 6 (PC6):
+  if(EXTI_GetITStatus(EXTI_Line6) != RESET)
   {
 	GPIO_ToggleBits(GPIOB, GPIO_Pin_7);
 
-    /* Clear the EXTI line 0 pending bit */
-    EXTI_ClearITPendingBit(EXTI_Line0);
+    //Clear the EXTI line 6 pending bit:
+    EXTI_ClearITPendingBit(EXTI_Line6);
   }
-}
-
-
-//Interrupcion al pulso por linea uno:
-void EXTI1_IRQHandler(void)
-{
-  if(EXTI_GetITStatus(EXTI_Line1) != RESET)
+  //Si la interrupcion fue por linea 8 (PC6):
+  else if(EXTI_GetITStatus(EXTI_Line8) != RESET)
   {
 	GPIO_ToggleBits(GPIOB, GPIO_Pin_0);
 
-    /* Clear the EXTI line 0 pending bit */
-    EXTI_ClearITPendingBit(EXTI_Line1);
+    //Clear the EXTI line 8 pending bit:
+    EXTI_ClearITPendingBit(EXTI_Line8);
   }
 }
-
-
