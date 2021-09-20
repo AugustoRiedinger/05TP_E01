@@ -42,6 +42,12 @@ DEFINICIONES:
 #define C2_Port GPIOC
 #define C2		GPIO_Pin_8
 
+//Ticks del despachador de tareas:
+#define Ticks_ClearLCD    5
+#define Ticks_Switchs     1
+#define Ticks_TimeIND 	  20
+#define Ticks_Temperature 8
+
 //Pin de conexion del LM35:
 #define LM35 	  GPIO_Pin_0
 #define LM35_Port GPIOC
@@ -62,6 +68,9 @@ VARIABLES GLOBALES:
 ------------------------------------------------------------------------------*/
 //Almacenamiento del valor de temperatura en grados centigrados:
 float TempDegrees;
+
+//Variables del TS:
+uint32_t Switchs;
 
 //Variables para el cronometro:
 uint32_t Seg;
@@ -104,9 +113,8 @@ CONFIGURACION DEL MICRO:
 	//Inicializacion de los pines de escirura del teclado como salidas digitales:
 	INIT_DO(F1_Port, F1);
 	INIT_DO(F2_Port, F2);
-	//Se setea F1 y F2 para medir constantemente C2 y C1 con el INT_Handler:
+	//Se setea F1 en 1 para que arranque en un valor logico distinto a F2:
 	GPIO_SetBits(F1_Port, F1);
-	GPIO_SetBits(F2_Port, F2);
 
 	//Inicializacion del LM35 como ENTRADA ANALOGICA / ADC1:
 	INIT_ADC(LM35_Port, LM35);
@@ -123,7 +131,8 @@ BUCLE PRINCIPAL:
 ------------------------------------------------------------------------------*/
     while(1)
     {
-
+		if (Switchs == Ticks_Switchs)
+			SWITCHS();
     }
 
 }
@@ -134,7 +143,7 @@ INTERRUPCIONES:
 //Interrupcion por tiempo - Systick cada 50mseg:
 void SysTick_Handler()
 {
-
+	Switchs++;
 }
 
 //Interrupcion al vencimiento de cuenta de TIM3:
@@ -182,20 +191,41 @@ void TIM3_IRQHandler(void)
 //Interrupcion al pulso:
 void EXTI9_5_IRQHandler(void)
 {
-  //Si la interrupcion fue por linea 6 (PC6):
+  //Si la interrupcion fue por linea 6 (PC6 - C1):
   if(EXTI_GetITStatus(EXTI_Line6) != RESET)
   {
-	GPIO_ToggleBits(GPIOB, GPIO_Pin_7);
+	if(GPIO_ReadInputDataBit(F1_Port, F1))
+		GPIO_ToggleBits(GPIOB, GPIO_Pin_7);
+	else if(GPIO_ReadInputDataBit(F2_Port, F2))
+		GPIO_ToggleBits(GPIOB, GPIO_Pin_0);
 
     //Clear the EXTI line 6 pending bit:
     EXTI_ClearITPendingBit(EXTI_Line6);
   }
-  //Si la interrupcion fue por linea 8 (PC6):
+  //Si la interrupcion fue por linea 8 (PC8 - C2):
   else if(EXTI_GetITStatus(EXTI_Line8) != RESET)
   {
-	GPIO_ToggleBits(GPIOB, GPIO_Pin_0);
+	if (GPIO_ReadInputDataBit(F1_Port, F1))
+		GPIO_ToggleBits(GPIOB, GPIO_Pin_7);
+	else if (GPIO_ReadInputDataBit(F2_Port, F2))
+		GPIO_ToggleBits(GPIOB, GPIO_Pin_0);
 
     //Clear the EXTI line 8 pending bit:
     EXTI_ClearITPendingBit(EXTI_Line8);
   }
 }
+
+/*------------------------------------------------------------------------------
+TAREAS DEL TS:
+------------------------------------------------------------------------------*/
+//Manejo de los pulsadores:
+void SWITCHS(void)
+{
+	//Reset variables del TS:
+	Switchs = 0;
+
+	//Se prender y apagan F1 y F2 para preguntar en el INT_Handler:
+	GPIO_ToggleBits(F1_Port, F1);
+	GPIO_ToggleBits(F2_Port, F2);
+}
+
