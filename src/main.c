@@ -43,7 +43,6 @@ DEFINICIONES:
 #define C2		GPIO_Pin_8
 
 //Ticks del despachador de tareas:
-#define Ticks_ClearLCD    5
 #define Ticks_Switchs     2
 #define Ticks_TimeIND 	  20
 #define Ticks_Temperature 8
@@ -161,7 +160,6 @@ void SysTick_Handler()
 	Switchs++;
 	TimeIND++;
 	Temperature++;
-	TimeIND++;
 }
 
 //Interrupcion al vencimiento de cuenta de TIM3:
